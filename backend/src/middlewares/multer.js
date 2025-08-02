@@ -8,11 +8,10 @@ const storage = multer.diskStorage({
     cb(null, file.originalname); // Using the original file name
   },
 });
-
-export const upload = multer({
+const upload = multer({
   storage: storage,
-  limits: { fileSize: 1024 * 1024 * 5 }, // Limiting file size to 5MB
-}).fields([
-  { name: "avatar", maxCount: 1 }, // Expecting a single avatar file
-  { name: "coverImg", maxCount: 1 } // Expecting a single cover image file
-]);
+  limits: { fileSize: 1024 * 1024 * 150 }, 
+});
+
+export default upload;
+
