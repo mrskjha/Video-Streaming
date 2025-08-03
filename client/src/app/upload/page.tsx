@@ -1,13 +1,9 @@
-import UploadVideoPage from '@/components/UploadVideo'
-import React from 'react'
+// app/upload/page.tsx
+'use client';
 
-const page = () => {
-  return (
-    <div>
-        <UploadVideoPage />
+import VideoUpload from "@/components/UploadVideo";
 
-    </div>
-  )
+
+export default function UploadPage() {
+  return <VideoUpload />;
 }
-
-export default page

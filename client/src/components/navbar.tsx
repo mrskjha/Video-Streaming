@@ -76,11 +76,15 @@ export default function Navbar() {
 
         {user ? (
           <>
-            <img
-              src={user.avatar}
-              alt="User Avatar"
-              className="w-8 h-8 rounded-full inline-block mr-2"
-            />
+            <Link href="/profile" className="flex items-center">
+            
+              <img
+                src={user.avatar}
+                alt="User Avatar"
+                className="w-8 h-8 rounded-full inline-block mr-2"
+              />
+             
+            </Link>
             <Button className="hidden md:block" onClick={logout}>
               <LogOut className="h-5 w-5" />
             </Button>

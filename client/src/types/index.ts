@@ -13,6 +13,7 @@ export type LoginPayload = {
 };
 
 export interface Video {
+  id: any;
   message(message: any): unknown;
   _id: string;
   title: string;

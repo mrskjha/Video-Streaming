@@ -1,6 +1,9 @@
-import { Video } from "@/types";
-import React from "react";
+'use client';
 
+import { Video } from "@/types";
+import React, { useCallback, useMemo, useState, useContext, useEffect } from "react";
+import axios from "axios";
+import { getVideos } from "@/services/video";
 
 type VideoContextType = {
   videos: Video[];
@@ -9,38 +12,58 @@ type VideoContextType = {
   updateVideo: (id: string, updatedVideo: Video) => void;
 };
 
-// Create context
-
 const VideoContext = React.createContext<VideoContextType | undefined>(undefined);
 
-// Provider component
 const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [videos, setVideos] = React.useState<Video[]>([]);
+  const [videos, setVideos] = useState<Video[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const addVideo = (video: Video) => {
-    setVideos((prevVideos) => [...prevVideos, video]);
-  };
+  useEffect(() => {
+    const fetchVideos = async () => {
+      const data = await getVideos();
+      try {
+        console.log("Fetched videos:", data);
+        setVideos(data);
+      } catch (error) {
+        console.error("Error fetching videos:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const removeVideo = (id: string) => {
-    setVideos((prevVideos) => prevVideos.filter((video) => video._id !== id));
-  };
+    fetchVideos();
+  }, []);
 
-  const updateVideo = (id: string, updatedVideo: Video) => {
-    setVideos((prevVideos) =>
-      prevVideos.map((video) => (video._id === id ? updatedVideo : video))
+  const addVideo = useCallback((video: Video) => {
+    setVideos((prev) => [...prev, video]);
+  }, []);
+
+  const removeVideo = useCallback((id: string) => {
+    setVideos((prev) => prev.filter((video) => video._id !== id));
+  }, []);
+
+  const updateVideo = useCallback((id: string, updatedVideo: Video) => {
+    setVideos((prev) =>
+      prev.map((video) => (video._id === id ? updatedVideo : video))
     );
-  };
+  }, []);
+
+  const value = useMemo(() => ({
+    videos,
+    addVideo,
+    removeVideo,
+    updateVideo,
+  }), [videos, addVideo, removeVideo, updateVideo]);
 
   return (
-    <VideoContext.Provider value={{ videos, addVideo, removeVideo, updateVideo }}>
+    <VideoContext.Provider value={value}>
       {children}
     </VideoContext.Provider>
   );
-}
+};
 
-// Custom hook for accessing the VideoContext
-const useVideoContext = () => {
-  const context = React.useContext(VideoContext);
+const useVideoContext = (): VideoContextType => {
+  const context = useContext(VideoContext);
   if (!context) {
     throw new Error("useVideoContext must be used within a VideoProvider");
   }

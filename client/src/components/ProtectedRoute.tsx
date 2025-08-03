@@ -1,29 +1,32 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/authContext";
-import { ReactNode } from "react";
 
-interface ProtectedRouteProps {
-  children: ReactNode;
-}
+const publicRoutes = ["/", "/videos", "/upload"]; // Allow these without login
 
-const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { user, isLoading } = useAuth();
+export default function ProtectedRoute({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { user, } = useAuth();
+  const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && !user) {
-      router.push("/login");
+    if (!user) {
+      if (!user && !publicRoutes.includes(pathname)) {
+        router.push("/login"); // Redirect if not logged in
+      }
     }
-  }, [user, isLoading]);
+  }, [user, pathname, router]);
 
-  if (isLoading) {
-    return <p>Loading...</p>;
+  // If it's public or logged in, show the children
+  if (publicRoutes.includes(pathname) || user) {
+    return <>{children}</>;
   }
 
-  return <>{children}</>;
-};
-
-export default ProtectedRoute;
+  return null;
+}

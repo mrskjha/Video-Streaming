@@ -1,20 +1,13 @@
-import { Footer } from "@/components/Footer";
 import HeroSection from "@/components/HeroSection";
-import ProtectedRoute from "@/components/ProtectedRoute";
 import Videos from "@/components/Videos";
+import { Footer } from "@/components/Footer";
 
-
-
-export default function Home() {
+export default function HomePage() {
   return (
     <>
-      <ProtectedRoute>
-        <HeroSection />
-        <Videos />
-      </ProtectedRoute>
+      <HeroSection />
+      <Videos />
       <Footer />
     </>
-
-
   );
 }

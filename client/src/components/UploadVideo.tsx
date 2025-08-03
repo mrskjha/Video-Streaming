@@ -104,7 +104,7 @@ const FileUpload = () => (
 // }
 
 // --- Main App Component ---
-export default function App() {
+export default function VideoUpload() {
   const { ToastContainer, toast } = useToast();
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
