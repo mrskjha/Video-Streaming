@@ -45,7 +45,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
           {
             $project: {
               username: 1,
-              fullName: 1,
+              fullname: 1,
               avatar: 1,
             },
           },
@@ -134,8 +134,25 @@ const publishVideo = asyncHandler(async (req, res) => {
 
 const getVideoById = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
-  //TODO: implement logic to get video by ID
+
+  if (!videoId) {
+    throw new ApiError(400, "Video ID is required");
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(videoId)) {
+    throw new ApiError(400, "Invalid video ID format");
+  }
+
+  const video = await Video.findById(videoId).populate("owner", "username fullname avatar");
+  if (!video) {
+    throw new ApiError(404, "Video not found");
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponce(200, video, "Video fetched successfully"));
 });
+
 
 const updateVideo = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
