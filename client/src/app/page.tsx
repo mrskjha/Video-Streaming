@@ -1,7 +1,7 @@
-import AllVideos from "@/components/AllVideos";
 import { Footer } from "@/components/Footer";
 import HeroSection from "@/components/HeroSection";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import Videos from "@/components/Videos";
 
 
 
@@ -10,7 +10,7 @@ export default function Home() {
     <>
       <ProtectedRoute>
         <HeroSection />
-        <AllVideos />
+        <Videos />
       </ProtectedRoute>
       <Footer />
     </>

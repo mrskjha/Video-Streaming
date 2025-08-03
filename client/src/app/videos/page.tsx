@@ -1,13 +1,15 @@
 // src/app/allvideos/page.tsx
 "use client";
-import AllVideos from "@/components/AllVideos";
+
 import ProtectedRoute from "@/components/ProtectedRoute";
+import Videos from "@/components/Videos";
 
 
 export default function AllVideosPage() {
   return (
+    
     <ProtectedRoute>
-      <AllVideos />
+      <Videos />
     </ProtectedRoute>
   );
 }

@@ -3,7 +3,7 @@ export interface User {
 	_id: string;
 	username: string;
 	email: string;
-	fullName: string;
+	fullname: string;
 	avatar: File | string;
 	coverImage: File | string;
 }
@@ -13,6 +13,7 @@ export type LoginPayload = {
 };
 
 export interface Video {
+  message(message: any): unknown;
   _id: string;
   title: string;
   description: string;
@@ -30,6 +31,7 @@ export interface Video {
 	_id: string;
 	username: string;
 	avatar: string;
+  fullname: string;
 }
 }
 
@@ -39,4 +41,10 @@ export interface Comment {
   userId: string;
   content: string;
   createdAt: Date;
+}
+
+export interface ToastProps {
+  message: string;
+  type: 'success' | 'error';
+  onDismiss: () => void;
 }
