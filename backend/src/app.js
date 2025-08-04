@@ -17,10 +17,16 @@ import userRouter from "./routes/user.routers.js"
 
 import videoRouter from "./routes/video.router.js";
 
+import likeRouter from "./routes/like.router.js";
+
+
+
 //routes declaration
 app.use("/api/v1/users",userRouter);
 
 app.use("/api/v1/videos", videoRouter);
+
+app.use("/api/v1/like", likeRouter);
 
 
 export { app};

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { LogOut, Moon, Search, Sun } from "lucide-react";
+import { Loader, LogOut, Moon, Search, Sun } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,7 +15,15 @@ import { useAuth } from "@/contexts/authContext";
 
 export default function Navbar() {
   const { setTheme } = useTheme();
-  const { user, logout } = useAuth();
+  const { user, logout,isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <nav className="flex w-full items-center justify-between border-b px-4 py-3 shadow-sm dark:border-neutral-800 bg-background">
+        <Loader className="h-6 w-6 animate-spin text-muted-foreground" />
+      </nav>
+    );
+  }
 
   return (
     <nav className="flex w-full items-center justify-between border-b px-4 py-3 shadow-sm dark:border-neutral-800 bg-background">

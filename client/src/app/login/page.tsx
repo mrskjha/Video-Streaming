@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/authContext";
+import axios from "axios";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -31,35 +33,30 @@ export default function LoginPage() {
         throw new Error("Please fill in all fields");
       }
 
-      const res = await fetch(
+      const res = await axios.post(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/users/login`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        }
+        formData
       );
 
-      if (!res.ok) {
-        throw new Error("Login failed");
+      if (res.status === 200 && res.data?.message?.user) {
+        setUser(res.data.message.user);
+        localStorage.setItem("token", res.data.message.accessToken);
+        setError(null);
+        setSuccess(true);
+        toast("Login successful! Redirecting...", {
+          description: "You will be redirected shortly.",
+          duration: 1000,
+        });
+        router.push("/");
+      } else {
+        setError("Invalid response from server");
       }
-
-      const data = await res.json();
-      setUser(data.message.user);
-      localStorage.setItem("token", data.message.accessToken);
-      setError(null);
-      setSuccess(true);
-      router.push("/");
-
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    
     <div className="flex items-center justify-center min-h-screen bg-black px-4">
       <div className="w-full max-w-md p-8 rounded-xl border border-white/10">
         <p className="text-3xl font-bold text-center text-white mb-6">
@@ -97,9 +94,7 @@ export default function LoginPage() {
             />
           </div>
 
-          {error && (
-            <p className="text-sm text-red-400 text-center">{error}</p>
-          )}
+          {error && <p className="text-sm text-red-400 text-center">{error}</p>}
 
           {success && (
             <p className="text-sm text-green-400 text-center">

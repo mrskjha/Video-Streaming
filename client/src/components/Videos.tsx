@@ -8,9 +8,11 @@ import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
 import { LoaderOne } from "@/components/ui/loader";
 import { useVideoContext } from "@/contexts/videoContext";
+import { useAuth } from "@/contexts/authContext";
 
 const Videos = () => {
   const { videos } = useVideoContext(); 
+  const { isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
 
   const handleVideoDetails = (video: Video) => {
@@ -18,6 +20,8 @@ const Videos = () => {
     router.push(`/videos/${videoId}`);
   };
 
+  if (isLoading || !videos ) return <LoaderOne />;
+  if(!isAuthenticated) return <div>Please log in to view videos.</div>;
   return (
     <div className="relative mx-auto my-10 flex max-w-7xl flex-col items-center justify-center">
       {/* Decorative Lines */}
@@ -35,8 +39,8 @@ const Videos = () => {
       <div className="px-4 py-10 md:py-20">
         <h1 className="text-2xl font-bold mb-6">All Videos</h1>
 
-        {videos.length === 0 ? (
-          <p>No videos found.</p>
+        {isLoading ||videos.length === 0 ? (
+          <LoaderOne />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {videos.map((video) => (

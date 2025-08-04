@@ -8,6 +8,8 @@ import { Button } from "./ui/button";
 import { Loader2Icon } from "lucide-react";
 import { BackgroundBeams } from "./ui/background-beams";
 import { Label } from "@radix-ui/react-dropdown-menu";
+import { useRouter } from "next/navigation";
+import { useVideoContext } from "@/contexts/videoContext";
 
 const Toast: React.FC<ToastProps> = ({ message, type, onDismiss }) => {
   useEffect(() => {
@@ -112,11 +114,11 @@ export default function VideoUpload() {
   const [description, setDescription] = useState("");
   const [isPublished, setIsPublished] = useState(true);
   const [uploading, setUploading] = useState(false);
-
+  const { videos, setVideos } = useVideoContext(); // Assuming you have a context to manage videos
   // Refs for file inputs to trigger them programmatically
   const videoInputRef = useRef<HTMLInputElement>(null);
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
-
+  const router = useRouter();
   const handleVideoSelect = (file: File) => {
     if (file && file.type.startsWith("video/")) {
       setVideoFile(file);
@@ -158,10 +160,10 @@ export default function VideoUpload() {
     try {
       setUploading(true);
       // Call the createVideo service to upload the video
-      await createVideo(formData);
-      toast.success("Video uploaded successfully!");
+     const response = await createVideo(formData);
+     setVideos((prev) => [...prev, response.data]);
 
-      // Reset form state after successful upload
+      toast.success("Video uploaded successfully!");
       setVideoFile(null);
       setThumbnailFile(null);
       setTitle("");
@@ -366,6 +368,7 @@ export default function VideoUpload() {
                 type="button"
                 onClick={handlePublish}
                 disabled={uploading}
+                className=" cursor-pointer"
               >
                 {uploading ? (
                   <Button size="sm" disabled>

@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { VideoProvider } from "@/contexts/videoContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/navbar";
+import { LikeProvider } from "@/contexts/likeContext";
 
 export default function ProvidersWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -16,7 +17,9 @@ export default function ProvidersWrapper({ children }: { children: React.ReactNo
   return (
     <AuthProvider>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <LikeProvider>
         <VideoProvider>
+
           {!isPublicRoute ? (
             <ProtectedRoute>
               <div className="relative mx-auto  my-10 flex max-w-7xl flex-col items-center justify-center">
@@ -29,6 +32,7 @@ export default function ProvidersWrapper({ children }: { children: React.ReactNo
             <div className="relative mx-auto my-10 max-w-7xl">{children}</div>
           )}
         </VideoProvider>
+        </LikeProvider>
       </ThemeProvider>
     </AuthProvider>
   );

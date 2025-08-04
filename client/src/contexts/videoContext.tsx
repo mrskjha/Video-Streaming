@@ -1,14 +1,16 @@
 'use client';
 
 import { Video } from "@/types";
-import React, { useCallback, useMemo, useState, useContext, useEffect } from "react";
-import axios from "axios";
+import React, { useCallback, useMemo, useState, useContext, useEffect, use } from "react";
 import { getVideos } from "@/services/video";
+import { useAuth } from "./authContext";
+import axios from "axios";
 
 type VideoContextType = {
   videos: Video[];
+  setVideos: React.Dispatch<React.SetStateAction<Video[]>>;
   addVideo: (video: Video) => void;
-  removeVideo: (id: string) => void;
+  deleteVideo: (id: string) => void;
   updateVideo: (id: string, updatedVideo: Video) => void;
 };
 
@@ -17,10 +19,16 @@ const VideoContext = React.createContext<VideoContextType | undefined>(undefined
 const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth(); 
 
   useEffect(() => {
     const fetchVideos = async () => {
       const data = await getVideos();
+      if (!data) {
+        console.error("Failed to fetch videos");
+        setLoading(false);
+        return;
+      }
       try {
         console.log("Fetched videos:", data);
         setVideos(data);
@@ -32,15 +40,25 @@ const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     };
 
     fetchVideos();
-  }, []);
+  }, [user]);
 
   const addVideo = useCallback((video: Video) => {
     setVideos((prev) => [...prev, video]);
   }, []);
 
-  const removeVideo = useCallback((id: string) => {
-    setVideos((prev) => prev.filter((video) => video._id !== id));
+  const deleteVideo = useCallback(async (id: string) => {
+    try {
+      const response = await axios.delete(`${process.env.NEXT_PUBLIC_API_BASE_URL}/videos/${id}`);
+      if (response.status !== 200) {
+        throw new Error("Failed to delete video");
+      }
+      setVideos((prev) => prev.filter((video) => video._id !== id));
+      
+    } catch (error) {
+      console.error("Error deleting video:", error);
+    }
   }, []);
+
 
   const updateVideo = useCallback((id: string, updatedVideo: Video) => {
     setVideos((prev) =>
@@ -48,12 +66,15 @@ const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     );
   }, []);
 
+  
+
   const value = useMemo(() => ({
     videos,
     addVideo,
-    removeVideo,
+    deleteVideo,
     updateVideo,
-  }), [videos, addVideo, removeVideo, updateVideo]);
+    setVideos
+  }), [videos, addVideo, deleteVideo, updateVideo, setVideos]);
 
   return (
     <VideoContext.Provider value={value}>

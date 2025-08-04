@@ -22,6 +22,7 @@ const createVideo = async (formData: FormData) => {
     },
     // You might add an onUploadProgress handler here for real progress tracking
   });
+  
   return response.data;
 };
 

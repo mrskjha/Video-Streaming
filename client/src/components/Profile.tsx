@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   IconArrowLeft,
   IconBrandTabler,
@@ -11,11 +11,20 @@ import { cn } from "@/lib/utils";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/authContext";
 import { useVideoContext } from "@/contexts/videoContext";
+import { LoaderOne } from "./ui/loader";
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const { videos } = useVideoContext();
   const [open, setOpen] = useState(false);
+  const [ready, setReady] = useState(false);
+
+  // Wait until auth is loaded before setting ready
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      setReady(true);
+    }
+  }, [isLoading, isAuthenticated]);
 
   const links = [
     {
@@ -25,7 +34,7 @@ export default function ProfilePage() {
     },
     {
       label: "All Videos",
-      href: "#",
+      href: "/videos",
       icon: <IconUserBolt className="h-5 w-5 text-neutral-700 dark:text-neutral-200" />,
     },
     {
@@ -39,6 +48,12 @@ export default function ProfilePage() {
       icon: <IconArrowLeft className="h-5 w-5 text-neutral-700 dark:text-neutral-200" />,
     },
   ];
+
+  if (isLoading || !ready) return <LoaderOne />;
+
+  if (!isAuthenticated) {
+    return <div className="text-center text-red-500 p-8">Please log in to view your profile.</div>;
+  }
 
   return (
     <div
@@ -75,11 +90,13 @@ export default function ProfilePage() {
         </SidebarBody>
       </Sidebar>
 
-      <Dashboard videos={videos.map((video) => ({
-        id: video.id,
-        title: video.title,
-        thumbnail: video.thumbnail,
-      }))} />
+      <Dashboard
+        videos={videos.map((video) => ({
+          id: video.id,
+          title: video.title,
+          thumbnail: video.thumbnail,
+        }))}
+      />
     </div>
   );
 }
@@ -104,7 +121,9 @@ const Dashboard = ({ videos }: { videos: { id: string; title: string; thumbnail:
     <div className="flex h-full w-full flex-1 flex-col gap-2 rounded-tl-2xl border border-neutral-200 bg-white p-2 md:p-10 dark:border-neutral-700 dark:bg-neutral-900">
       <h2 className="text-xl font-semibold text-black dark:text-white mb-4">Uploaded Videos</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {videos && videos.length > 0 ? (
+        {videos.length === 0 ? (
+          <LoaderOne />
+        ) : (
           videos.map((video) => (
             <div key={video.id} className="bg-neutral-100 dark:bg-neutral-800 rounded-lg shadow p-3">
               <img src={video.thumbnail} alt={video.title} className="w-full h-40 object-cover rounded mb-2" />
@@ -113,8 +132,6 @@ const Dashboard = ({ videos }: { videos: { id: string; title: string; thumbnail:
               </span>
             </div>
           ))
-        ) : (
-          <div className="col-span-full text-neutral-500 text-center">No videos uploaded yet.</div>
         )}
       </div>
     </div>
