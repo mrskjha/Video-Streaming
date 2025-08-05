@@ -22,6 +22,7 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { Label } from "./ui/label";
 import { SignUpSchema } from "@/types/SignupType";
+import { registerUser } from "@/services/auth";
 
 
 
@@ -51,12 +52,9 @@ const Register = () => {
       if (data.avatar) formData.append("avatar", data.avatar);
       if (data.coverImg) formData.append("coverImg", data.coverImg);
 
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/users/register`,
-        formData
-      );
+      const response = await registerUser(formData);
       toast("User Registration", {
-        description: `User ${response.data.username} has been registered successfully!`,
+        description: `User ${response} has been registered successfully!`,
         action: {
           label: "Undo",
           onClick: () => console.log("Undo"),

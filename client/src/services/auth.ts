@@ -1,10 +1,16 @@
-import { LoginPayload, User } from "@/types";
+import { User } from "@/types";
 import axios from "@/lib/axios";
+import { SignInSchema } from "@/types/SignupType";
+import z from "zod";
 
-export const loginUser = async (payload: LoginPayload): Promise<User> => {
+export const loginUser = async (
+  payload: z.infer<typeof SignInSchema>
+): Promise<{ user: User; accessToken: string; refreshToken: string }> => {
   const response = await axios.post("/users/login", payload);
-  return response.data.user;
+  return response.data.message; // yahi me sab data hai
 };
+
+
 
 export const registerUser = async (payload: FormData): Promise<void> => {
   const response = await axios.post("/users/register", payload, {

@@ -6,8 +6,9 @@ import { AuthProvider } from "@/contexts/authContext";
 import { ThemeProvider } from "@/components/theme-provider";
 import { VideoProvider } from "@/contexts/videoContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import Navbar from "@/components/navbar";
+
 import { LikeProvider } from "@/contexts/likeContext";
+import Navbar from "@/components/navbar";
 
 export default function ProvidersWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

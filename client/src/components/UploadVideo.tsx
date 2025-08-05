@@ -1,153 +1,164 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
-import axiosInstance from "@/lib/axiosInstance";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createVideo } from "@/services/video";
-import { ToastProps } from "@/types";
-// import { FileUpload } from "./ui/file-upload";
-import { Button } from "./ui/button";
-import { Loader2Icon } from "lucide-react";
-import { BackgroundBeams } from "./ui/background-beams";
-import { Label } from "@radix-ui/react-dropdown-menu";
-import { useRouter } from "next/navigation";
 import { useVideoContext } from "@/contexts/videoContext";
+import { useRouter } from "next/navigation";
 
+// --- UI और आइकॉन इम्पोर्ट्स ---
+import { Button } from "./ui/button";
+import { Loader2Icon, UploadCloud, Image as ImageIcon, X } from "lucide-react";
+import { BackgroundBeams } from "./ui/background-beams";
+
+// --- टाइप्स ---
+interface ToastProps {
+  message: string;
+  type: "success" | "error";
+  onDismiss: () => void;
+}
+
+
+
+// --- टोस्ट नोटिफिकेशन हुक (UI सुधार के साथ) ---
 const Toast: React.FC<ToastProps> = ({ message, type, onDismiss }) => {
   useEffect(() => {
-    const timer = setTimeout(() => {
-      onDismiss();
-    }, 3000);
+    const timer = setTimeout(() => onDismiss(), 4000);
     return () => clearTimeout(timer);
   }, [onDismiss]);
 
-  const baseStyle =
-    "fixed top-5 right-5 px-6 py-3 rounded-lg shadow-lg text-white transition-opacity duration-300";
-  const typeStyle = type === "success" ? "bg-green-600" : "bg-red-600";
-
-  return <div className={`${baseStyle} ${typeStyle}`}>{message}</div>;
-};
-
-const useToast = () => {
-  interface ToastItem {
-    id: number;
-    message: string;
-    type: "success" | "error";
-  }
-  const [toasts, setToasts] = useState<ToastItem[]>([]);
-  let toastId = 0;
-
-  const showToast = (message: any, type: "success" | "error") => {
-    const id = toastId++;
-    setToasts((prev) => [...prev, { id, message, type }]);
+  const typeStyles = {
+    success: "bg-green-100 border-green-400 text-green-800 dark:bg-green-900/50 dark:border-green-700 dark:text-green-200",
+    error: "bg-red-100 border-red-400 text-red-800 dark:bg-red-900/50 dark:border-red-700 dark:text-red-200",
   };
 
-  const dismissToast = (id: number) => {
-    setToasts((prev) => prev.filter((toast) => toast.id !== id));
-  };
-
-  const ToastContainer = () => (
-    <>
-      {toasts.map((toast) => (
-        <Toast
-          key={toast.id}
-          {...toast}
-          onDismiss={() => dismissToast(toast.id)}
-        />
-      ))}
-    </>
+  return (
+    <div className={`fixed top-5 right-5 z-50 flex max-w-sm items-center rounded-lg border p-4 shadow-lg transition-opacity duration-300 ${typeStyles[type]}`}>
+      <p>{message}</p>
+      <button onClick={onDismiss} className="ml-4 p-1 text-current/70 hover:text-current">&times;</button>
+    </div>
   );
-
-  return {
-    ToastContainer,
-    toast: {
-      success: (message: string) => showToast(message, "success"),
-      error: (message: string) => showToast(message, "error"),
-    },
-  };
 };
 
-// /**
-//  * Real Video Service using Axios
-//  * This function sends the video data to a backend server.
-//  * @param {FormData} formData - The form data containing video details and files.
-//  * @returns {Promise<any>} A promise that resolves with the response data.
-//  */
+// ... useToast हुक का लॉजिक वही रहेगा ...
+const useToast = () => {
+    interface ToastItem { id: number; message: string; type: "success" | "error"; }
+    const [toasts, setToasts] = useState<ToastItem[]>([]);
+    
+    const showToast = useCallback((message: string, type: "success" | "error") => {
+        const id = Date.now();
+        setToasts(prev => [...prev, { id, message, type }]);
+    }, []);
+    
+    const dismissToast = (id: number) => {
+        setToasts(prev => prev.filter(toast => toast.id !== id));
+    };
+    
+    const ToastContainer = () => (
+        <div className="fixed top-5 right-5 z-50 space-y-2">
+            {toasts.map(toast => <Toast key={toast.id} {...toast} onDismiss={() => dismissToast(toast.id)} />)}
+        </div>
+    );
+    
+    return { ToastContainer, toast: { success: (message: string) => showToast(message, "success"), error: (message: string) => showToast(message, "error") }};
+};
 
-// --- UI Components ---
-const FileUpload = () => (
-  <div className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center">
-    <svg
-      className="mx-auto h-12 w-12 text-gray-500"
-      stroke="currentColor"
-      fill="none"
-      viewBox="0 0 48 48"
-      aria-hidden="true"
-    >
-      <path
-        d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-    <p className="mt-4 text-sm text-gray-400">
-      <span className="font-semibold text-blue-400">Click to upload</span> or
-      drag and drop
-    </p>
-    <p className="text-xs text-gray-500">MP4, AVI, MOV (max 2GB)</p>
+
+// --- UI कंपोनेंट्स ---
+
+const FormCard = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+  <div className={`rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 shadow-sm ${className}`}>
+    {children}
   </div>
 );
 
-// export function FileUploadDemo() {
-//   const [files, setFiles] = useState<File[]>([]);
-//   const handleFileUpload = (files: File[]) => {
-//     setFiles(files);
-//     console.log(files);
-//   };
-// }
 
-// --- Main App Component ---
+
+interface FileDropzoneProps {
+    onFileSelect: (file: File) => void;
+    acceptedTypes: string;
+    selectedFile: File | null;
+    children: React.ReactNode;
+}
+
+const FileDropzone: React.FC<FileDropzoneProps> = ({ onFileSelect, acceptedTypes, selectedFile, children }) => {
+    const [isDragging, setIsDragging] = useState(false);
+    const handleDrag = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); };
+    const handleDragIn = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); };
+    const handleDragOut = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); };
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            onFileSelect(e.dataTransfer.files[0]);
+        }
+    };
+
+    const borderStyle = isDragging
+        ? "border-blue-500"
+        : "border-neutral-300 dark:border-neutral-700";
+
+    if (selectedFile) return <>{children}</>;
+
+    return (
+        <div onDragEnter={handleDragIn} onDragLeave={handleDragOut} onDragOver={handleDrag} onDrop={handleDrop}
+             className={`relative flex h-full min-h-[12rem] w-full flex-col items-center justify-center rounded-lg border-2 border-dashed ${borderStyle} transition-colors`}>
+            {children}
+        </div>
+    );
+}
+
+const StyledInput = ({ ...props }) => (
+    <input className="mt-1 block w-full rounded-md border-neutral-300 bg-neutral-100/50 px-3 py-2 text-neutral-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white" {...props}/>
+)
+
+const StyledTextarea = ({ ...props }) => (
+    <textarea className="mt-1 block w-full rounded-md border-neutral-300 bg-neutral-100/50 px-3 py-2 text-neutral-900 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white" {...props}/>
+)
+
+interface ToggleSwitchProps {
+    checked: boolean;
+    onChange: React.ChangeEventHandler<HTMLInputElement>;
+    label: string;
+}
+
+const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ checked, onChange, label }) => (
+    <label htmlFor="toggle" className="flex cursor-pointer items-center justify-between">
+        <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{label}</span>
+        <div className="relative">
+            <input type="checkbox" id="toggle" className="peer sr-only" checked={checked} onChange={onChange} />
+            <div className="block h-8 w-14 rounded-full bg-neutral-200 dark:bg-neutral-700"></div>
+            <div className="dot absolute left-1 top-1 h-6 w-6 rounded-full bg-white transition peer-checked:translate-x-full peer-checked:bg-blue-500"></div>
+        </div>
+    </label>
+);
+
+// --- मुख्य अपलोड कंपोनेंट ---
 export default function VideoUpload() {
   const { ToastContainer, toast } = useToast();
-  const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const router = useRouter();
+  const { setVideos } = useVideoContext();
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [isPublished, setIsPublished] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const { videos, setVideos } = useVideoContext(); // Assuming you have a context to manage videos
-  // Refs for file inputs to trigger them programmatically
+  const [uploadProgress, setUploadProgress] = useState(0);
+
   const videoInputRef = useRef<HTMLInputElement>(null);
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
-  const router = useRouter();
-  const handleVideoSelect = (file: File) => {
-    if (file && file.type.startsWith("video/")) {
-      setVideoFile(file);
-    } else {
-      toast.error("Invalid file type. Please upload a video.");
-    }
-  };
 
-  const handleThumbnailSelect = (file: File) => {
-    if (file && file.type.startsWith("image/")) {
-      setThumbnailFile(file);
-    } else {
-      toast.error("Invalid thumbnail file.");
-    }
-  };
-
-  const handleSaveDraft = () => {
-    if (!title) {
-      toast.error("A title is required to save a draft.");
-      return;
-    }
-    toast.success("Draft saved successfully!");
-    console.log("Saving draft:", { title, description });
+  const handleFileSelect = (file: File, type: 'video' | 'thumbnail') => {
+      if (type === 'video' && file.type.startsWith('video/')) setVideoFile(file);
+      else if (type === 'thumbnail' && file.type.startsWith('image/')) setThumbnailFile(file);
+      else toast.error("Invalid file type.");
   };
 
   const handlePublish = async () => {
     if (!videoFile || !thumbnailFile || !title) {
-      toast.error("Please provide a title, video file, and thumbnail.");
-      return;
+        toast.error("Please provide a title, video file, and thumbnail.");
+        return;
     }
 
     const formData = new FormData();
@@ -158,232 +169,134 @@ export default function VideoUpload() {
     formData.append("thumbnail", thumbnailFile);
 
     try {
-      setUploading(true);
-      // Call the createVideo service to upload the video
-     const response = await createVideo(formData);
-     setVideos((prev) => [...prev, response.data]);
+        setUploading(true);
+        setUploadProgress(0); // रीसेट प्रोग्रेस
+        
+        // **UI NOTE:** वास्तविक प्रोग्रेस के लिए, आपको Axios के onUploadProgress का उपयोग करना होगा।
+        // यहाँ हम एक नकली प्रोग्रेस दिखाते हैं।
+        const progressInterval = setInterval(() => {
+            setUploadProgress(prev => (prev < 95 ? prev + 5 : prev));
+        }, 200);
 
-      toast.success("Video uploaded successfully!");
-      setVideoFile(null);
-      setThumbnailFile(null);
-      setTitle("");
-      setDescription("");
-      setIsPublished(true);
+        const response = await createVideo(formData);
+        
+        clearInterval(progressInterval);
+        setUploadProgress(100);
+
+        setVideos((prev) => [...(prev || []), response.data]);
+        toast.success("Video uploaded successfully!");
+
+        setTimeout(() => {
+            router.push('/profile'); // या वीडियो पेज पर
+        }, 1000);
+
     } catch (error) {
-      toast.error("Upload failed. Please try again.");
-      console.error("Upload error:", error);
+        toast.error("Upload failed. Please try again.");
     } finally {
-      setUploading(false);
+        setUploading(false);
     }
   };
 
   return (
-    <div className="h-[40rem] w-full rounded-md bg-neutral-950 relative flex flex-col items-center justify-center antialiased mt-20">
-      <ToastContainer />
-      <style>{`
-        .toggle-checkbox:checked {
-            right: 0;
-            border-color: #4A90E2;
-        }
-        .toggle-checkbox:checked + .toggle-label {
-            background-color: #4A90E2;
-        }
-      `}</style>
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 z-10">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-white">
-            Upload Video
-          </h1>
-          <p className="mt-1 text-gray-400">
-            Add details and upload your video file to share it with the world.
-          </p>
-        </header>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Section: Details & Thumbnail */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-neutral-950 rounded-lg shadow-md p-6">
-              <div>
-                <Label className="block text-xl font-medium text-white mb-1">
-                  Title (required)
-                </Label>
-                <textarea
-                  id="video-title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Give your video a catchy title"
-                  className="rounded-lg border border-neutral-800 pl-6 mt-4 pt-2 focus:ring-2 focus:ring-teal-500  w-full relative z-10   bg-neutral-950 placeholder:text-white placeholder:font-semibold  "
-                />
-              </div>
-              <div className="mt-4">
-                <Label className="block text-xl font-medium text-white mb-1 ">
-                  Description
-                </Label>
-                <textarea
-                  id="video-description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Tell viewers about your video"
-                  rows={8}
-                  className="rounded-lg border border-neutral-800 pl-6 mt-4 pt-2 focus:ring-2 focus:ring-teal-500  w-full relative z-10   bg-neutral-950 placeholder:text-white placeholder:font-semibold  "
-                />
-              </div>
-            </div>
-
-            <div className="bg-neutral-950 rounded-lg shadow-md p-6 -mt-10">
-              <h2 className="text-xl font-semibold mb-2 text-white">
-                Thumbnail
-              </h2>
-              <p className="text-sm text-gray-400 mb-4">
-                Select or upload a picture that shows what's in your video.
-              </p>
-              <div className="flex items-center gap-4 mt-4 z-10">
-                <div className="w-48 h-27 bg-gray-800 rounded-md flex items-center justify-center overflow-hidden">
-                  {thumbnailFile ? (
-                    <img
-                      src={URL.createObjectURL(thumbnailFile)}
-                      alt="Thumbnail preview"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-48 w-full border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
-                      <div className="text-center">
-                        <svg
-                          className="mx-auto h-10 w-10 text-gray-400"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M3 16l4-4a3 3 0 014.24 0l3.6 3.6a1.5 1.5 0 002.12 0L21 10M3 20h18"
-                          />
-                        </svg>
-                        <p className="mt-2 text-sm text-gray-500">
-                          No thumbnail selected
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <Button
-                    type="button"
-                    onClick={() => thumbnailInputRef.current?.click()}
-                    disabled={uploading}
-                    className="z-10"
-                  >
-                    Upload Thumbnail
-                  </Button>
-                  <input
-                    ref={thumbnailInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleThumbnailSelect(file);
-                    }}
-                    className="hidden"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Section: Upload & Publish */}
-          <div className="space-y-6 z-10">
-            <div
-              className=" rounded-lg shadow-md p-6 text-center cursor-pointer hover:border-blue-500 transition-colors"
-              onClick={() => !videoFile && videoInputRef.current?.click()}
-            >
-              {videoFile ? (
-                <div>
-                  <p className="text-sm font-medium text-white truncate">
-                    {videoFile.name}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Ready to be published!
-                  </p>
-                  <button
-                    onClick={() => setVideoFile(null)}
-                    className="mt-2 text-sm text-red-400 hover:text-red-500"
-                  >
-                    Remove Video
-                  </button>
-                </div>
-              ) : (
-                <FileUpload />
-              )}
-              <input
-                ref={videoInputRef}
-                type="file"
-                accept="video/*"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleVideoSelect(file);
-                }}
-              />
-            </div>
-
-            <div className="rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-4 text-white">
-                Visibility
-              </h2>
-              <div className="flex items-center justify-between">
-                <label
-                  htmlFor="is-published"
-                  className="text-sm font-medium text-gray-300"
-                >
-                  Publish Immediately
-                </label>
-                <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                  <input
-                    type="checkbox"
-                    id="is-published"
-                    checked={isPublished}
-                    onChange={(e) => setIsPublished(e.target.checked)}
-                    className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
-                  />
-                  <Label
-                   
-                    className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-600 cursor-pointer"
-                  ></Label>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end space-x-4">
-              <Button
-                type="button"
-                onClick={handleSaveDraft}
-                disabled={uploading}
-              >
-                Save Draft
-              </Button>
-              <Button
-                type="button"
-                onClick={handlePublish}
-                disabled={uploading}
-                className=" cursor-pointer"
-              >
-                {uploading ? (
-                  <Button size="sm" disabled>
-                    <Loader2Icon className="animate-spin" />
-                    Please wait
-                  </Button>
-                ) : (
-                  "Publish"
-                )}
-              </Button>
-            </div>
-          </div>
+    <div className="relative min-h-screen w-full bg-white dark:bg-neutral-950">
+        <div className="absolute inset-0 z-0 dark:block hidden">
+            <BackgroundBeams />
         </div>
-      </div>
-      <BackgroundBeams />
+        <ToastContainer />
+      
+        <div className="relative z-10 mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+            <header className="mb-8">
+                <h1 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">Upload Video</h1>
+                <p className="mt-1 text-neutral-500 dark:text-neutral-400">Share your story with the world.</p>
+            </header>
+
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+                {/* Left Section */}
+                <div className="lg:col-span-2 space-y-6">
+                    <FormCard>
+                        <div className="p-6 space-y-6">
+                            <div>
+                                <label htmlFor="title" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Title (required)</label>
+                                <StyledInput id="title" value={title} onChange={(e: { target: { value: React.SetStateAction<string>; }; }) => setTitle(e.target.value)} placeholder="A catchy title for your video" />
+                            </div>
+                            <div>
+                                <label htmlFor="description" className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">Description</label>
+                                <StyledTextarea id="description" value={description} onChange={(e: { target: { value: React.SetStateAction<string>; }; }) => setDescription(e.target.value)} placeholder="Tell viewers about your video" rows={6}/>
+                            </div>
+                        </div>
+                    </FormCard>
+                    <FormCard>
+                        <div className="p-6">
+                             <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">Thumbnail</h3>
+                             <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">Select or drop an image that captures your video's essence.</p>
+                             <div className="mt-4">
+                                <FileDropzone onFileSelect={(file) => handleFileSelect(file, 'thumbnail')} acceptedTypes="image/*" selectedFile={thumbnailFile}>
+                                    {thumbnailFile ? (
+                                        <div className="relative w-full h-48 rounded-md overflow-hidden">
+                                            <img src={URL.createObjectURL(thumbnailFile)} alt="Thumbnail Preview" className="h-full w-full object-cover"/>
+                                            <button onClick={() => setThumbnailFile(null)} className="absolute top-2 right-2 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/75">
+                                                <X size={16}/>
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <ImageIcon className="h-12 w-12 text-neutral-400" />
+                                            <button type="button" onClick={() => thumbnailInputRef.current?.click()} className="mt-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline">
+                                                Click to upload
+                                            </button>
+                                            <p className="text-xs text-neutral-500">or drag and drop</p>
+                                        </>
+                                    )}
+                                </FileDropzone>
+                                <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files && handleFileSelect(e.target.files[0], 'thumbnail')}/>
+                             </div>
+                        </div>
+                    </FormCard>
+                </div>
+                {/* Right Section */}
+                <div className="lg:col-span-1 space-y-6">
+                    <FormCard>
+                        <div className="p-6">
+                            <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">Video File</h3>
+                            <div className="mt-4">
+                                <FileDropzone onFileSelect={(file) => handleFileSelect(file, 'video')} acceptedTypes="video/*" selectedFile={videoFile}>
+                                     {videoFile ? (
+                                        <div className="w-full text-center">
+                                            <video src={URL.createObjectURL(videoFile)} className="mx-auto h-24 rounded-md" controls={false} />
+                                            <p className="mt-2 text-sm font-medium text-neutral-800 dark:text-neutral-200 truncate">{videoFile.name}</p>
+                                            <button onClick={() => setVideoFile(null)} className="mt-1 text-sm text-red-600 dark:text-red-500 hover:underline">Remove</button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <UploadCloud className="h-12 w-12 text-neutral-400" />
+                                            <button type="button" onClick={() => videoInputRef.current?.click()} className="mt-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline">
+                                                Click to upload
+                                            </button>
+                                            <p className="text-xs text-neutral-500">or drag and drop</p>
+                                        </>
+                                    )}
+                                </FileDropzone>
+                                <input ref={videoInputRef} type="file" accept="video/*" className="hidden" onChange={(e) => e.target.files && handleFileSelect(e.target.files[0], 'video')}/>
+                            </div>
+                        </div>
+                    </FormCard>
+                    <FormCard>
+                        <div className="p-6 space-y-4">
+                            <ToggleSwitch checked={isPublished} onChange={(e) => setIsPublished(e.target.checked)} label="Publish Immediately"/>
+                            <Button type="button" onClick={handlePublish} disabled={uploading || !videoFile || !thumbnailFile || !title} className="w-full" size="lg">
+                                {uploading ? <Loader2Icon className="mr-2 h-4 w-4 animate-spin"/> : null}
+                                {uploading ? `Uploading... ${uploadProgress}%` : "Publish Video"}
+                            </Button>
+                        </div>
+                    </FormCard>
+                    {uploading && (
+                         <div className="w-full bg-neutral-200 rounded-full h-2.5 dark:bg-neutral-700">
+                             <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${uploadProgress}%`, transition: 'width 0.3s ease-in-out' }}></div>
+                         </div>
+                    )}
+                </div>
+            </div>
+        </div>
     </div>
   );
 }

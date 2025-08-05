@@ -13,16 +13,12 @@ const getVideoById = async (videoId: string): Promise<Video> => {
 };
 
 
-const createVideo = async (formData: FormData) => {
-  // We use FormData to correctly handle file uploads.
-  // The backend will need to be able to parse multipart/form-data.
+const createVideo = async (formData: FormData) => { 
   const response = await axiosInstance.post("/videos", formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
-    // You might add an onUploadProgress handler here for real progress tracking
   });
-  
   return response.data;
 };
 
@@ -35,4 +31,8 @@ const deleteVideo = async (id: string): Promise<void> => {
   await axiosInstance.delete(`/videos/${id}`);
 };
 
-export { getVideos,getVideoById, createVideo, updateVideo, deleteVideo };
+const incrementVideoViews = async (videoId: string) => {
+  const response = await axiosInstance.patch(`/videos/${videoId}/views`);
+  return response.data;
+};
+export { getVideos,getVideoById, createVideo, updateVideo, deleteVideo, incrementVideoViews };

@@ -1,5 +1,7 @@
 
 export interface User {
+  accessToken: string;
+  message: any;
 	_id: string;
 	username: string;
 	email: string;
@@ -7,10 +9,7 @@ export interface User {
 	avatar: File | string;
 	coverImage: File | string;
 }
-export type LoginPayload = {
-  email: string;
-  password: string;
-};
+
 
 export interface Video {
   id: any;
@@ -29,6 +28,7 @@ export interface Video {
   comments: Comment[];
   createdAt: Date;
   owner: {
+  subscribersCount: number;
 	_id: string;
 	username: string;
 	avatar: string;

@@ -61,7 +61,7 @@ export default function Navbar() {
         {/* Theme Toggle */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="cursor-pointer">
               <Sun className="h-5 w-5 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
               <Moon className="absolute h-5 w-5 scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
               <span className="sr-only">Toggle theme</span>
@@ -93,13 +93,13 @@ export default function Navbar() {
               />
              
             </Link>
-            <Button className="hidden md:block" onClick={logout}>
+            <Button className="hidden md:block cursor-pointer" onClick={logout}>
               <LogOut className="h-5 w-5" />
             </Button>
           </>
         ) : (
           <Link href="/login">
-            <Button className="w-24 md:w-28 dark:bg-white dark:text-black dark:hover:bg-gray-200">
+            <Button className="w-24 md:w-28 dark:bg-white dark:text-black dark:hover:bg-gray-200 cursor-pointer">
               Login
             </Button>
           </Link>
