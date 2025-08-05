@@ -38,7 +38,7 @@ const Toast: React.FC<ToastProps> = ({ message, type, onDismiss }) => {
   );
 };
 
-// ... useToast हुक का लॉजिक वही रहेगा ...
+// ... useToast 
 const useToast = () => {
     interface ToastItem { id: number; message: string; type: "success" | "error"; }
     const [toasts, setToasts] = useState<ToastItem[]>([]);
@@ -62,7 +62,7 @@ const useToast = () => {
 };
 
 
-// --- UI कंपोनेंट्स ---
+//--UI components for form elements
 
 const FormCard = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
   <div className={`rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900 shadow-sm ${className}`}>
@@ -170,10 +170,9 @@ export default function VideoUpload() {
 
     try {
         setUploading(true);
-        setUploadProgress(0); // रीसेट प्रोग्रेस
+        setUploadProgress(0); 
         
-        // **UI NOTE:** वास्तविक प्रोग्रेस के लिए, आपको Axios के onUploadProgress का उपयोग करना होगा।
-        // यहाँ हम एक नकली प्रोग्रेस दिखाते हैं।
+        
         const progressInterval = setInterval(() => {
             setUploadProgress(prev => (prev < 95 ? prev + 5 : prev));
         }, 200);
@@ -187,7 +186,7 @@ export default function VideoUpload() {
         toast.success("Video uploaded successfully!");
 
         setTimeout(() => {
-            router.push('/profile'); // या वीडियो पेज पर
+            router.push('/profile'); 
         }, 1000);
 
     } catch (error) {
@@ -228,7 +227,7 @@ export default function VideoUpload() {
                     <FormCard>
                         <div className="p-6">
                              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">Thumbnail</h3>
-                             <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">Select or drop an image that captures your video's essence.</p>
+                             <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">Select or drop an image that captures your video&apos;s essence.</p>
                              <div className="mt-4">
                                 <FileDropzone onFileSelect={(file) => handleFileSelect(file, 'thumbnail')} acceptedTypes="image/*" selectedFile={thumbnailFile}>
                                     {thumbnailFile ? (

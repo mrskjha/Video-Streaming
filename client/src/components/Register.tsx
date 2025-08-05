@@ -2,7 +2,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
 import { useForm } from "react-hook-form";
-import { set, z } from "zod";
+
 
 import {
   Form,
@@ -23,6 +23,7 @@ import { Loader2 } from "lucide-react";
 import { Label } from "./ui/label";
 import { SignUpSchema } from "@/types/SignupType";
 import { registerUser } from "@/services/auth";
+import { z } from "zod";
 
 
 

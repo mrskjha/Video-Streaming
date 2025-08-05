@@ -1,7 +1,7 @@
 
 export interface User {
   accessToken: string;
-  message: any;
+  message: string;
 	_id: string;
 	username: string;
 	email: string;
@@ -12,8 +12,8 @@ export interface User {
 
 
 export interface Video {
-  id: any;
-  message(message: any): unknown;
+  id: number;
+  message(message: string): unknown;
   _id: string;
   title: string;
   description: string;

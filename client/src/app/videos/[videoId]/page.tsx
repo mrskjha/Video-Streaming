@@ -99,7 +99,7 @@ const VideoPage = () => {
         setIsLoading(true);
         try {
           const response = await getVideoById(videoId);
-          setVideo(response.message);
+          setVideo(response.message as unknown as Video);
           await incrementVideoViews(videoId);
         } catch (err) {
           setError("Could not load video. Please try again later.");

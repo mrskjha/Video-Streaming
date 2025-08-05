@@ -92,7 +92,7 @@ export default function ProfilePage() {
 
       <Dashboard
         videos={videos.map((video) => ({
-          id: video.id,
+          id: String(video.id),
           title: video.title,
           thumbnail: video.thumbnail,
         }))}

@@ -110,7 +110,7 @@ const Dashboard: React.FC = () => {
       <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-300 bg-neutral-50 py-20 text-center dark:border-neutral-800 dark:bg-neutral-900/50">
         <FilmIcon className="h-12 w-12 text-neutral-500 dark:text-neutral-600"/>
         <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">Welcome, {user?.fullname}!</h1>
-        <p className="mt-2 text-neutral-600 dark:text-neutral-400">You haven't uploaded any videos yet. Let's get started!</p>
+        <p className="mt-2 text-neutral-600 dark:text-neutral-400">You haven&apos;t uploaded any videos yet. Let&apos;s get started!</p>
         <Button onClick={() => router.push("/upload")} className="mt-6">
           <Plus className="mr-2 h-4 w-4" />
           Upload Your First Video
@@ -125,7 +125,7 @@ const Dashboard: React.FC = () => {
       <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
         <div>
           <h1 className="text-3xl font-bold text-neutral-900 dark:text-white">Welcome back, {user?.fullname}!</h1>
-          <p className="mt-1 text-neutral-600 dark:text-neutral-400">Here's a summary of your channel's activity.</p>
+          <p className="mt-1 text-neutral-600 dark:text-neutral-400">Here&apos;s a summary of your channel&apos;s activity.</p>
         </div>
         <Button onClick={() => router.push("/upload")} size="lg">
           <Plus className="mr-2 h-4 w-4" />
