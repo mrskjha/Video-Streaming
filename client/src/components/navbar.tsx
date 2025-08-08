@@ -30,13 +30,22 @@ export default function Navbar() {
     setSearchTerm(inputValue);
   }
 
-  const handleLogout = () => {
-    setUser(null);
-    logoutUser()
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
+  const handleLogout = async () => {
+  try {
+    // It's good practice to await the server logout
+    await logoutUser(); 
+  } catch (error) {
+    console.error("Logout failed:", error);
+  } finally {
+    // This will trigger the context to clear user from localStorage
+    setUser(null); 
+    
+    // Remove the token separately as the context doesn't manage it
+    localStorage.removeItem("token"); 
+    
     router.push("/login");
-  };
+  }
+};
 
   return (
     <nav className="flex w-full items-center justify-between border-b px-4 py-3 shadow-sm dark:border-neutral-800 bg-background">
