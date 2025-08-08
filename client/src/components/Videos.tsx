@@ -66,13 +66,14 @@ const AuthPrompt = () => {
 
 // --- Main Videos Component ---
 const Videos = () => {
+  // CORRECT: Hooks are called at the top level of the Videos component.
   const { videos, loading, searchTerm, setSearchTerm } = useVideoContext();
   const { isLoading: isAuthLoading, isAuthenticated } = useAuth();
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
   const handleMouseEnter = (index: number) => {
     if (videoRefs.current[index]) {
-      videoRefs.current[index]?.play().catch(() => {}); 
+      videoRefs.current[index]?.play().catch(() => {});
     }
   };
 
@@ -80,7 +81,7 @@ const Videos = () => {
     const videoElement = videoRefs.current[index];
     if (videoElement) {
       videoElement.pause();
-      videoElement.currentTime = 0; 
+      videoElement.currentTime = 0;
     }
   };
 
@@ -93,8 +94,10 @@ const Videos = () => {
     return new Date(dateString).toLocaleDateString("en-US", options);
   };
 
+  // This function is now valid because it does NOT call hooks.
+  // It simply uses the variables (like 'isAuthLoading', 'isAuthenticated', 'videos', etc.)
+  // from its parent scope (the Videos component).
   const renderContent = () => {
-    
     const filteredVideos = searchTerm
       ? videos.filter((video) =>
           video.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -108,7 +111,7 @@ const Videos = () => {
       return <AuthPrompt />;
     }
 
-    // 5. Render the video grid
+    // Render the video grid
     return (
       <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {filteredVideos.map((video: Video, index: number) => (
