@@ -21,10 +21,12 @@ import Link from "next/link";
 import { loginUser } from "@/services/auth";
 import { useAuth } from "@/contexts/authContext";
 import { toast } from "sonner";
+import { useVideoContext } from "@/contexts/videoContext";
 
 const LoginPage = () => {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+  const { loading, setLoading } = useVideoContext();
   const router = useRouter();
   const { setUser } = useAuth();
   const form = useForm<z.infer<typeof SignInSchema>>({
@@ -37,11 +39,13 @@ const LoginPage = () => {
 
   const onSubmit = async (data: z.infer<typeof SignInSchema>) => {
     setIsSubmitting(true);
+    setLoading(true); 
     try {
       const { user, accessToken } = await loginUser(data);
+
       setIsAuthenticated(true);
       setUser(user);
-      console.log(accessToken);
+      // console.log(accessToken);
       localStorage.setItem("token", accessToken);
       toast.success("Login successful! Redirecting...");
       router.push("/");
@@ -50,6 +54,7 @@ const LoginPage = () => {
       toast.error("Invalid email or password");
     } finally {
       setIsSubmitting(false);
+      setLoading(false);
     }
   };
 

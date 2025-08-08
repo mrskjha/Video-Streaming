@@ -18,7 +18,6 @@ type AuthContextType = {
   user: User | null;
   setUser: Dispatch<SetStateAction<User | null>>;
   isLoading?: boolean; 
-  logout: () => void;
 };
 
 // Create context
@@ -48,23 +47,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [user, isLoading]);
 
-  // Logout function
-  const logout = async () => {
-    try {
-      await logoutUser();
-    } catch (err) {
-      console.error(err);
-    }
-
-    setUser(null);
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-
-    router.push("/login"); // after state cleanup
-  };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, isLoading, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, setUser, isLoading, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );

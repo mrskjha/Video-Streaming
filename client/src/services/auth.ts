@@ -31,7 +31,7 @@ export const logoutUser = async (): Promise<void> => {
 
   await axios.post(
     "/users/logout",
-    {}, // No body
+    {}, 
     {
       headers: {
         Authorization: `Bearer ${token}`,

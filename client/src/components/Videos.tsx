@@ -11,7 +11,6 @@ import {
   ClockIcon,
   EyeIcon,
   FilmIcon,
-  Loader2,
   Search,
   ThumbsUp,
 } from "lucide-react";
@@ -66,16 +65,14 @@ const AuthPrompt = () => {
 };
 
 // --- Main Videos Component ---
-
 const Videos = () => {
-  // Get videos and loading from context
-  const { videos, loading } = useVideoContext();
+  const { videos, loading, searchTerm, setSearchTerm } = useVideoContext();
   const { isLoading: isAuthLoading, isAuthenticated } = useAuth();
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
   const handleMouseEnter = (index: number) => {
     if (videoRefs.current[index]) {
-      videoRefs.current[index]?.play().catch(() => {}); // Catch errors if autoplay is blocked
+      videoRefs.current[index]?.play().catch(() => {}); 
     }
   };
 
@@ -83,7 +80,7 @@ const Videos = () => {
     const videoElement = videoRefs.current[index];
     if (videoElement) {
       videoElement.pause();
-      videoElement.currentTime = 0; // Reset video to the beginning
+      videoElement.currentTime = 0; 
     }
   };
 
@@ -97,9 +94,7 @@ const Videos = () => {
   };
 
   const renderContent = () => {
-    const { searchTerm, setSearchTerm } = useVideoContext();
-    console.log("Current search term:", searchTerm);
-    const { loading } = useVideoContext();
+    
     const filteredVideos = searchTerm
       ? videos.filter((video) =>
           video.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -195,7 +190,9 @@ const Videos = () => {
       <div className="w-full px-4 py-10 md:py-20">
         <h1 className="mb-8 text-3xl font-bold text-white">All Videos</h1>
         {loading ? (
-          <Loader2 />
+          <div className="flex justify-center">
+            <LoaderOne />
+          </div>
         ) : videos.length === 0 ? (
           <EmptyState
             title="No Videos Found"
