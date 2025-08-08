@@ -7,17 +7,11 @@ import { useVideoContext } from "@/contexts/videoContext";
 import { useAuth } from "@/contexts/authContext";
 
 import { Video } from "@/types";
-import {
-  ClockIcon,
-  EyeIcon,
-  FilmIcon,
-  Search,
-  ThumbsUp,
-} from "lucide-react";
+import { ClockIcon, EyeIcon, FilmIcon } from "lucide-react";
 import { LoaderOne } from "@/components/ui/loader";
 import { Button } from "./ui/button";
 
-// --- Helper Components (for completeness) ---
+// --- Helper Components ---
 
 const VideoGridSkeleton = () => (
   <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
@@ -66,7 +60,6 @@ const AuthPrompt = () => {
 
 // --- Main Videos Component ---
 const Videos = () => {
-  // CORRECT: Hooks are called at the top level of the Videos component.
   const { videos, loading, searchTerm, setSearchTerm } = useVideoContext();
   const { isLoading: isAuthLoading, isAuthenticated } = useAuth();
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
@@ -94,9 +87,6 @@ const Videos = () => {
     return new Date(dateString).toLocaleDateString("en-US", options);
   };
 
-  // This function is now valid because it does NOT call hooks.
-  // It simply uses the variables (like 'isAuthLoading', 'isAuthenticated', 'videos', etc.)
-  // from its parent scope (the Videos component).
   const renderContent = () => {
     const filteredVideos = searchTerm
       ? videos.filter((video) =>
@@ -107,11 +97,20 @@ const Videos = () => {
     if (isAuthLoading) {
       return <LoaderOne />;
     }
+
     if (!isAuthenticated) {
       return <AuthPrompt />;
     }
+    
+    if (filteredVideos.length === 0) {
+        return (
+             <EmptyState
+                title="No Videos Found"
+                message="Your search did not match any videos. Please try a different term."
+            />
+        )
+    }
 
-    // Render the video grid
     return (
       <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {filteredVideos.map((video: Video, index: number) => (
@@ -121,7 +120,6 @@ const Videos = () => {
               onMouseEnter={() => handleMouseEnter(index)}
               onMouseLeave={() => handleMouseLeave(index)}
             >
-              {/* Thumbnail Video */}
               <div className="relative mb-3 h-48 w-full overflow-hidden rounded-lg border border-neutral-800">
                 <video
                   ref={(el) => {
@@ -143,7 +141,6 @@ const Videos = () => {
                 )}
               </div>
 
-              {/* Video Info */}
               <div className="flex flex-1 flex-col">
                 <div className="flex-1">
                   <h2 className="text-md font-semibold text-white line-clamp-2">
@@ -160,7 +157,6 @@ const Videos = () => {
                   </div>
                 </div>
 
-                {/* Owner Info */}
                 <div className="mt-3 flex items-center gap-x-3">
                   <img
                     src={video.owner.avatar}
@@ -181,7 +177,6 @@ const Videos = () => {
 
   return (
     <div className="relative mx-auto my-10 w-full max-w-7xl">
-      {/* Decorative Lines */}
       <div className="pointer-events-none absolute inset-y-0 left-0 h-full w-px bg-neutral-800/80">
         <div className="absolute top-1/4 h-40 w-px animate-glow bg-gradient-to-b from-transparent via-purple-500 to-transparent" />
       </div>
@@ -189,7 +184,6 @@ const Videos = () => {
         <div className="absolute bottom-1/4 h-40 w-px animate-glow delay-1000 bg-gradient-to-b from-transparent via-purple-500 to-transparent" />
       </div>
 
-      {/* Content */}
       <div className="w-full px-4 py-10 md:py-20">
         <h1 className="mb-8 text-3xl font-bold text-white">All Videos</h1>
         {loading ? (
