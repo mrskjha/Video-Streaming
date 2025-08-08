@@ -7,7 +7,14 @@ import { useVideoContext } from "@/contexts/videoContext";
 import { useAuth } from "@/contexts/authContext";
 
 import { Video } from "@/types";
-import { ClockIcon, EyeIcon, FilmIcon, ThumbsUp } from "lucide-react";
+import {
+  ClockIcon,
+  EyeIcon,
+  FilmIcon,
+  Loader2,
+  Search,
+  ThumbsUp,
+} from "lucide-react";
 import { LoaderOne } from "@/components/ui/loader";
 import { Button } from "./ui/button";
 
@@ -23,8 +30,8 @@ const VideoGridSkeleton = () => (
           <div className="h-4 w-3/4 rounded bg-neutral-800"></div>
         </div>
         <div className="flex items-center gap-x-3 pt-2">
-            <div className="h-8 w-8 rounded-full bg-neutral-800"></div>
-            <div className="h-4 w-1/3 rounded bg-neutral-800"></div>
+          <div className="h-8 w-8 rounded-full bg-neutral-800"></div>
+          <div className="h-4 w-1/3 rounded bg-neutral-800"></div>
         </div>
       </div>
     ))}
@@ -36,32 +43,33 @@ interface EmptyStateProps {
   message: string;
 }
 const EmptyState = ({ title, message }: EmptyStateProps) => (
-    <div className="col-span-full flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-neutral-800 py-20 text-center">
-        <FilmIcon className="h-12 w-12 text-neutral-600" />
-        <h3 className="mt-4 text-xl font-semibold text-white">{title}</h3>
-        <p className="mt-2 text-sm text-neutral-400">{message}</p>
-    </div>
+  <div className="col-span-full flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-neutral-800 py-20 text-center">
+    <FilmIcon className="h-12 w-12 text-neutral-600" />
+    <h3 className="mt-4 text-xl font-semibold text-white">{title}</h3>
+    <p className="mt-2 text-sm text-neutral-400">{message}</p>
+  </div>
 );
 
 const AuthPrompt = () => {
-    const router = useRouter();
-    return (
-        <div className="col-span-full flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-neutral-800 py-20 text-center">
-            <h3 className="text-xl font-semibold text-white">Login Required</h3>
-            <p className="mt-2 text-sm text-neutral-400">Please log in to view and interact with videos.</p>
-            <Button onClick={() => router.push("/login")} className="mt-6">
-                Go to Login
-            </Button>
-        </div>
-    );
+  const router = useRouter();
+  return (
+    <div className="col-span-full flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-neutral-800 py-20 text-center">
+      <h3 className="text-xl font-semibold text-white">Login Required</h3>
+      <p className="mt-2 text-sm text-neutral-400">
+        Please log in to view and interact with videos.
+      </p>
+      <Button onClick={() => router.push("/login")} className="mt-6">
+        Go to Login
+      </Button>
+    </div>
+  );
 };
-
 
 // --- Main Videos Component ---
 
 const Videos = () => {
-  // Get videos from context
-  const { videos } = useVideoContext();
+  // Get videos and loading from context
+  const { videos, loading } = useVideoContext();
   const { isLoading: isAuthLoading, isAuthenticated } = useAuth();
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
@@ -80,28 +88,35 @@ const Videos = () => {
   };
 
   const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString('en-US', options);
+    const options: Intl.DateTimeFormatOptions = {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    };
+    return new Date(dateString).toLocaleDateString("en-US", options);
   };
 
   const renderContent = () => {
-    // 1. Primary auth loading state
+    const { searchTerm, setSearchTerm } = useVideoContext();
+    console.log("Current search term:", searchTerm);
+    const { loading } = useVideoContext();
+    const filteredVideos = searchTerm
+      ? videos.filter((video) =>
+          video.title.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      : videos;
+
     if (isAuthLoading) {
       return <LoaderOne />;
     }
-    // 2. Check for authentication
     if (!isAuthenticated) {
       return <AuthPrompt />;
     }
-    // 3. (Removed video loading state check as isLoading is not available)
-    // 4. Check if videos are available
-    if (!videos || videos.length === 0) {
-      return <EmptyState title="No Videos Found" message="There are no videos to display at the moment." />;
-    }
+
     // 5. Render the video grid
     return (
       <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {videos.map((video: Video, index: number) => (
+        {filteredVideos.map((video: Video, index: number) => (
           <Link href={`/videos/${video._id}`} key={video._id}>
             <div
               className="group flex h-full flex-col"
@@ -111,7 +126,9 @@ const Videos = () => {
               {/* Thumbnail Video */}
               <div className="relative mb-3 h-48 w-full overflow-hidden rounded-lg border border-neutral-800">
                 <video
-                  ref={el => { videoRefs.current[index] = el; }}
+                  ref={(el) => {
+                    videoRefs.current[index] = el;
+                  }}
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
                   src={video.videoFile}
                   poster={video.thumbnail}
@@ -121,26 +138,40 @@ const Videos = () => {
                   preload="metadata"
                 />
                 {video.duration && (
-                    <div className="absolute bottom-2 right-2 rounded bg-black/50 px-1.5 py-0.5 text-xs font-semibold text-white">
-                        {Math.round(video.duration / 60)}:{String(Math.round(video.duration % 60)).padStart(2, '0')}
-                    </div>
+                  <div className="absolute bottom-2 right-2 rounded bg-black/50 px-1.5 py-0.5 text-xs font-semibold text-white">
+                    {Math.round(video.duration / 60)}:
+                    {String(Math.round(video.duration % 60)).padStart(2, "0")}
+                  </div>
                 )}
               </div>
 
               {/* Video Info */}
               <div className="flex flex-1 flex-col">
                 <div className="flex-1">
-                  <h2 className="text-md font-semibold text-white line-clamp-2">{video.title}</h2>
+                  <h2 className="text-md font-semibold text-white line-clamp-2">
+                    {video.title}
+                  </h2>
                   <div className="mt-2 flex items-center space-x-3 text-xs text-neutral-400">
-                    <div className="flex items-center"><EyeIcon className="mr-1 h-3 w-3" /> {video.views || 0}</div>
-                    <div className="flex items-center"><ClockIcon className="mr-1 h-3 w-3" /> {formatDate(String(video.createdAt))}</div>
+                    <div className="flex items-center">
+                      <EyeIcon className="mr-1 h-3 w-3" /> {video.views || 0}
+                    </div>
+                    <div className="flex items-center">
+                      <ClockIcon className="mr-1 h-3 w-3" />{" "}
+                      {formatDate(String(video.createdAt))}
+                    </div>
                   </div>
                 </div>
 
                 {/* Owner Info */}
                 <div className="mt-3 flex items-center gap-x-3">
-                  <img src={video.owner.avatar} alt={video.owner.fullname} className="h-8 w-8 rounded-full object-cover" />
-                  <h3 className="text-sm font-medium text-neutral-300">{video.owner.fullname}</h3>
+                  <img
+                    src={video.owner.avatar}
+                    alt={video.owner.fullname}
+                    className="h-8 w-8 rounded-full object-cover"
+                  />
+                  <h3 className="text-sm font-medium text-neutral-300">
+                    {video.owner.fullname}
+                  </h3>
                 </div>
               </div>
             </div>
@@ -163,7 +194,16 @@ const Videos = () => {
       {/* Content */}
       <div className="w-full px-4 py-10 md:py-20">
         <h1 className="mb-8 text-3xl font-bold text-white">All Videos</h1>
-        {renderContent()}
+        {loading ? (
+          <Loader2 />
+        ) : videos.length === 0 ? (
+          <EmptyState
+            title="No Videos Found"
+            message="There are no videos to display at the moment."
+          />
+        ) : (
+          renderContent()
+        )}
       </div>
     </div>
   );

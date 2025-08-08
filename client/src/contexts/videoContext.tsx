@@ -5,13 +5,18 @@ import React, { useCallback, useMemo, useState, useContext, useEffect, use } fro
 import { getVideos } from "@/services/video";
 import { useAuth } from "./authContext";
 import axios from "axios";
+import { set } from "zod";
 
 type VideoContextType = {
   videos: Video[];
   setVideos: React.Dispatch<React.SetStateAction<Video[]>>;
+  loading: boolean;
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
   addVideo: (video: Video) => void;
   deleteVideo: (id: string) => void;
   updateVideo: (id: string, updatedVideo: Video) => void;
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
 };
 
 const VideoContext = React.createContext<VideoContextType | undefined>(undefined);
@@ -30,7 +35,7 @@ const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         return;
       }
       try {
-        console.log("Fetched videos:", data);
+        // console.log("Fetched videos:", data);
         setVideos(data);
       } catch (error) {
         console.error("Error fetching videos:", error);
@@ -40,7 +45,7 @@ const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     };
 
     fetchVideos();
-  }, [user]);
+  }, [user,loading]);
 
   const addVideo = useCallback((video: Video) => {
     setVideos((prev) => [...prev, video]);
@@ -66,6 +71,9 @@ const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     );
   }, []);
 
+
+  const [searchTerm, setSearchTerm] = useState<string>("");
+
   
 
   const value = useMemo(() => ({
@@ -73,8 +81,12 @@ const VideoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     addVideo,
     deleteVideo,
     updateVideo,
-    setVideos
-  }), [videos, addVideo, deleteVideo, updateVideo, setVideos]);
+    setVideos,
+    searchTerm,
+    setSearchTerm,
+    loading,
+    setLoading
+  }), [videos, addVideo, deleteVideo, updateVideo, setVideos, searchTerm, setSearchTerm,setLoading, loading]);
 
   return (
     <VideoContext.Provider value={value}>

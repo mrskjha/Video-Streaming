@@ -12,17 +12,19 @@ import {
 import { useTheme } from "next-themes";
 import { PlaceholdersAndVanishInput } from "./ui/placeholders-and-vanish-input";
 import { useAuth } from "@/contexts/authContext";
+import { useVideoContext } from "@/contexts/videoContext";
+import { useEffect, useState } from "react";
 
 export default function Navbar() {
   const { setTheme } = useTheme();
-  const { user, logout,isLoading } = useAuth();
+  const { user, logout, isLoading } = useAuth();
+  const { searchTerm, setSearchTerm } = useVideoContext();
+  const { videos } = useVideoContext();
+  const [inputValue, setInputValue] = useState("");
 
-  if (isLoading) {
-    return (
-      <nav className="flex w-full items-center justify-between border-b px-4 py-3 shadow-sm dark:border-neutral-800 bg-background">
-        <Loader className="h-6 w-6 animate-spin text-muted-foreground" />
-      </nav>
-    );
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSearchTerm(inputValue);
   }
 
   return (
@@ -46,8 +48,12 @@ export default function Navbar() {
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
         <PlaceholdersAndVanishInput
           placeholders={["Search for streams, channels, or games..."]}
-          onChange={() => {}}
-          onSubmit={() => {}}
+          onChange={(e) => {
+            const value = e.target.value;
+            setInputValue(value);
+            setSearchTerm(value); 
+          }}
+          onSubmit={handleSearchSubmit}
         />
       </div>
 
@@ -85,13 +91,11 @@ export default function Navbar() {
         {user ? (
           <>
             <Link href="/profile" className="flex items-center">
-            
               <img
                 src={user.avatar}
                 alt="User Avatar"
                 className="w-8 h-8 rounded-full inline-block mr-2"
               />
-             
             </Link>
             <Button className="hidden md:block cursor-pointer" onClick={logout}>
               <LogOut className="h-5 w-5" />
