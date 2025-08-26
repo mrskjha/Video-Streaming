@@ -6,6 +6,7 @@ export interface User {
 	username: string;
 	email: string;
 	fullname: string;
+  subscribersCount: number;
 	avatar: File | string;
 	coverImage: File | string;
 }
@@ -29,6 +30,7 @@ export interface Video {
   createdAt: Date;
   owner: {
   subscribersCount: number;
+  isSubscribed: boolean;
 	_id: string;
 	username: string;
 	avatar: string;

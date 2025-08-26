@@ -12,7 +12,6 @@ import { LoaderOne } from "@/components/ui/loader";
 import { Button } from "./ui/button";
 
 // --- Helper Components ---
-
 const VideoGridSkeleton = () => (
   <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
     {Array.from({ length: 8 }).map((_, i) => (
@@ -60,7 +59,7 @@ const AuthPrompt = () => {
 
 // --- Main Videos Component ---
 const Videos = () => {
-  const { videos, loading, searchTerm, setSearchTerm } = useVideoContext();
+  const { videos, loading, searchTerm } = useVideoContext();
   const { isLoading: isAuthLoading, isAuthenticated } = useAuth();
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
@@ -88,11 +87,14 @@ const Videos = () => {
   };
 
   const renderContent = () => {
+    // ✅ Always make sure videos is an array
+    const safeVideos: Video[] = Array.isArray(videos) ? videos : [];
+
     const filteredVideos = searchTerm
-      ? videos.filter((video) =>
+      ? safeVideos.filter((video) =>
           video.title.toLowerCase().includes(searchTerm.toLowerCase())
         )
-      : videos;
+      : safeVideos;
 
     if (isAuthLoading) {
       return <LoaderOne />;
@@ -101,19 +103,19 @@ const Videos = () => {
     if (!isAuthenticated) {
       return <AuthPrompt />;
     }
-    
+
     if (filteredVideos.length === 0) {
-        return (
-             <EmptyState
-                title="No Videos Found"
-                message="Your search did not match any videos. Please try a different term."
-            />
-        )
+      return (
+        <EmptyState
+          title="No Videos Found"
+          message="Your search did not match any videos. Please try a different term."
+        />
+      );
     }
 
     return (
       <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {filteredVideos.map((video: Video, index: number) => (
+        {filteredVideos.map((video, index) => (
           <Link href={`/videos/${video._id}`} key={video._id}>
             <div
               className="group flex h-full flex-col"
@@ -190,7 +192,7 @@ const Videos = () => {
           <div className="flex justify-center">
             <LoaderOne />
           </div>
-        ) : videos.length === 0 ? (
+        ) : !Array.isArray(videos) || videos.length === 0 ? (
           <EmptyState
             title="No Videos Found"
             message="There are no videos to display at the moment."
